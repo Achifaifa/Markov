@@ -2,6 +2,25 @@
 import os, random
 
 dictionary={"$start$":[]}
+path="./data/text"
+
+def formatf():
+  """
+  Formats a file removing anything that is not a sentence and would screw the loader up
+  """
+
+  with open (path,"r+") as file:
+    whole=file.readlines()
+    for line in whole:
+      line=line.replace("?"," ? ").replace("!"," ! ").replace(","," , ").replace(";"," ; ").replace(":"," : ").replace('"',"")
+      if len(line.split())<2:
+        line=""
+
+
+    file.seek(0,0)
+    for line in whole:
+      file.write(line)
+
 
 def load():
   """
@@ -11,15 +30,16 @@ def load():
   """
   global dictionary
 
-  with open ("./data/text","r") as data:
+  formatf()
+
+  with open (path,"r") as data:
 
     for line in data:
-      line=line.replace("?"," ? ").replace("!"," ! ").replace(","," , ").replace(";"," ; ").replace(":"," : ").replace('"',"")
-      line=line.strip().split()
+      line=line.strip().replace(","," ,").replace("-"," - ").replace(";"," ; ").replace(":"," : ").strip(".").strip().split()
 
       #Process a line
       for i in range(len(line)):
-
+        line[i]=line[i].strip('"')
         #If the line is empty, pass
         if line[i]=="" or line[i]==" ":
           pass
@@ -39,8 +59,9 @@ def load():
                 dictionary[line[i-1]].append(line[i])
               except KeyError:
                 dictionary[line[i-1]]=[line[i]]
-            elif "." in line[i-1] and not line[i-1].partition('.')[0] in ["Mr","Mrs","Ms","St"]:
-              dictionary["$start$"].append(line[i].strip('.'))
+            elif "." in line[i-1]:
+              if not line[i-1].partition('.')[0] in ["Mr","Mrs","Ms","St"]:
+                dictionary["$start$"].append(line[i].strip('.'))
 
             #Special case for abbreviations
             if line[i-1].partition('.')[0] in ["Mr","Mrs","Ms","St"]:
@@ -74,12 +95,13 @@ def load():
               except KeyError:
                 dictionary[line[i].strip('.').strip()]=["$end$"]
 
+
 def format(string):
   """
   Formats the output string
   """
 
-  return string.replace(" ,",",").replace(" - ","-").replace(" ;",";").replace(" :",":").strip(".").strip()
+  return string.replace(" ,",",").replace(" - ","-").replace(" ;",";").replace(" :",":").strip(".").strip("'").strip()+"."
 
 def talk():
   """
@@ -97,12 +119,12 @@ def talk():
       else:
         chain=chain+" "+word
     return format(chain)
-    
+
   except KeyError:
     return "Key Error: "+word
 
 load()
-# print dictionary
+# print dictionary["$start$"]
 print "Ready \n",("="*10)
 while 1:
   print talk()
