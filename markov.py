@@ -74,9 +74,21 @@ def load():
               except KeyError:
                 dictionary[line[i].strip('.').strip()]=["$end$"]
 
+def format(string):
+  """
+  Formats the output string
+  """
+
+  return string.replace(" ,",",").replace(" - ","-").replace(" ;",";").replace(" :",":").strip(".").strip()
+
 def talk():
+  """
+  Generates a string fror a dictionary containing references
+  """
+
   chain=""
   word="$start$"
+
   try:
     while 1:
       word=random.choice(dictionary[word])
@@ -84,7 +96,8 @@ def talk():
         break
       else:
         chain=chain+" "+word
-    return chain.replace(" ,",",").replace(" - ","-").replace(" ;",";").replace(" :",":").strip().strip(".").replace(" ' ","").strip()
+    return format(chain)
+    
   except KeyError:
     return "Key Error: "+word
 
