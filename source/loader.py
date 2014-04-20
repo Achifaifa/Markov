@@ -15,19 +15,56 @@ def load(path):
   """
   global dictionary
 
-  with open (path,"r") as data:
+  with open (path,"r+") as data:
+    lines=data.readlines()
+    data.seek(0,0)
 
+    for line in lines:
+      #Change stupid american punctuation
+      line=line.replace(".'","'.").replace('."','".')
+      line=line.lstrip()
+
+      #If a line does not end with a dot, remove the line break
+      if not line.rstrip().endswith("."):
+        line=line.rstrip()
+
+      #If a line ends with a dash, remove the dash, remove the dash and the line break
+      if line.rstrip().endswith("-"):
+        line=line.rstrip().rstrip("-")
+
+      #If the line is less than three words long, delete it
+      if len(line.split())<=3:
+        line=""
+
+      #If a line is entirely in caps, delete it
+      shout=1
+      for i in line:
+        if not i.isupper():
+          if not i.isdigit():
+            shout=0
+      if shout==1:
+        line=""
+
+      #Write the modified line into the file
+      data.write(line.lstrip())
+
+    #Process the lines
     for line in data:
-      line=line.strip().replace(","," ,").replace("-"," - ").replace(";"," ; ").replace(":"," : ").strip(".").strip().split()
 
-      #Process a line
+      #make the punctuation symbols a separate word and split the string
+      line=line.strip().replace(","," ,").replace("-"," - ").replace(";"," ; ").replace(":"," : ").strip().split()
+
+      #Process the line
       for i in range(len(line)):
-        line[i]=line[i].strip('"')
+
+        #Remove quotes
+        line[i]=line[i].strip('"').strip("'")
+
         #If the line is empty, pass
         if line[i]=="" or line[i]==" ":
           pass
 
-        #If the word it's first in the line, add it to the possible start values
+        #If the word is first in the line, add it to the possible start values
         if i==0:
           dictionary["$start$"].append(line[i])
 
@@ -36,15 +73,20 @@ def load(path):
 
           #If it's not the last word, add it to the previous' word entry
           #Unless the previous word was the last one
-          if "." not in line[i] and "?" not in line[i] and "!" not in line[i]:
-            if "." not in line[i-1] and not line[i-1] in ["!","?"]:
+          if line[i] not in ["!","?"] and "." not in line[i]:
+            if line[i-1] not in ["!","?"] and "." not in line[i-1]:
               try:
                 dictionary[line[i-1]].append(line[i])
               except KeyError:
                 dictionary[line[i-1]]=[line[i]]
-            elif "." in line[i-1]:
+
+            else:
               if not line[i-1].partition('.')[0] in ["Mr","Mrs","Ms","St"]:
                 dictionary["$start$"].append(line[i].strip('.'))
+                try:
+                  dictionary[line[i-1]].append("$end$")
+                except KeyError:
+                  dictionary[line[i-1]]=["$end$"]
 
             #Special case for abbreviations
             if line[i-1].partition('.')[0] in ["Mr","Mrs","Ms","St"]:
@@ -55,7 +97,8 @@ def load(path):
 
 
           #If it's the last word, do the same and add the $end$ mark to the current word
-          elif "." in line[i]:
+          elif line[i] in ["!","?"] or "." in line[i]:
+
             #Check if the word with a dot is an abbreviation
             #If it is, add the word with the dot as previously done
             if line[i].partition('.')[0] in ["Mr","Mrs","Ms","St"]:

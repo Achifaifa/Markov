@@ -37,7 +37,8 @@ def talk():
     return "Key Error: "+word
 
 dictionary=loader.load(path)
-print "Ready \n",("="*10)
+os.system('clear')
+print "Ready \nPress enter to generate a new sentence \n",("="*10)
 while 1:
-  print talk()
   raw_input()
+  print talk()
