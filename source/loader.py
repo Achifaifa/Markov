@@ -1,36 +1,19 @@
-#! /usr/bin/env python
-import os, random
+ #! /usr/bin/env python
+"""
+Generates a data dictionary for the markov generator from a text file. The text file path is passed to the load function.
+"""
+
+import os
 
 dictionary={"$start$":[]}
-path="./data/text"
 
-def formatf():
+def load(path):
   """
-  Formats a file removing anything that is not a sentence and would screw the loader up
-  """
-
-  with open (path,"r+") as file:
-    whole=file.readlines()
-    for line in whole:
-      line=line.replace("?"," ? ").replace("!"," ! ").replace(","," , ").replace(";"," ; ").replace(":"," : ").replace('"',"")
-      if len(line.split())<2:
-        line=""
-
-
-    file.seek(0,0)
-    for line in whole:
-      file.write(line)
-
-
-def load():
-  """
-  Load the text in ./data/text into a dictionary.
+  Load the text in the specified path into a dictionary.
 
   Each dictionary contains words in keys and possible next words in a list as a value. 
   """
   global dictionary
-
-  formatf()
 
   with open (path,"r") as data:
 
@@ -95,37 +78,4 @@ def load():
               except KeyError:
                 dictionary[line[i].strip('.').strip()]=["$end$"]
 
-
-def format(string):
-  """
-  Formats the output string
-  """
-
-  return string.replace(" ,",",").replace(" - ","-").replace(" ;",";").replace(" :",":").strip(".").strip("'").strip()+"."
-
-def talk():
-  """
-  Generates a string fror a dictionary containing references
-  """
-
-  chain=""
-  word="$start$"
-
-  try:
-    while 1:
-      word=random.choice(dictionary[word])
-      if word in ["$end$","."]:
-        break
-      else:
-        chain=chain+" "+word
-    return format(chain)
-
-  except KeyError:
-    return "Key Error: "+word
-
-load()
-# print dictionary["$start$"]
-print "Ready \n",("="*10)
-while 1:
-  print talk()
-  raw_input()
+  return dictionary
